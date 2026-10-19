@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BusGo · bus booking</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f8faff 0%, #eef2f9 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .app-container {
+      max-width: 1100px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 2.5rem;
+      box-shadow: 0 25px 50px -10px rgba(0, 20, 50, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+      padding: 2rem 2rem 2.5rem;
+      transition: all 0.2s;
+    }
+
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+      color: #0b1e3a;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 span {
+      background: #1e4f8a;
+      color: white;
+      font-size: 1.2rem;
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .subhead {
+      color: #3d5a7a;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+      font-weight: 400;
+      border-left: 4px solid #1e4f8a;
+      padding-left: 1rem;
+    }
+
+    .booking-panel {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr;
+      gap: 2rem;
+    }
+
+    /* ---------- SEARCH SECTION ---------- */
+    .search-section {
+      background: #ffffffd9;
+      backdrop-filter: blur(4px);
+      border-radius: 2rem;
+      padding: 1.75rem 1.75rem 2rem;
+      box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+    }
+
+    .search-section h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #0b1e3a;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #4a627a;
+    }
+
+    .input-group input, 
+    .input-group select {
+      padding: 0.9rem 1.2rem;
+      border: 1.5px solid #d9e2ef;
+      border-radius: 1.2rem;
+      font-size: 1rem;
+      background: white;
+      transition: 0.2s;
+      outline: none;
+      color: #0b1e3a;
+      font-weight: 500;
+      width: 100%;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: #1e4f8a;
+      box-shadow: 0 0 0 3px rgba(30, 79, 138, 0.15);
+    }
+
+    .row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+
+    .search-btn {
+      background: #1e4f8a;
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 2rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 10px 18px -8px #1e4f8a80;
+      margin-top: 0.6rem;
+      letter-spacing: 0.3px;
+    }
+
+    .search-btn:hover {
+      background: #123b6b;
+      transform: scale(1.01);
+      box-shadow: 0 14px 22px -8px #1e4f8a;
+    }
+
+    .search-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* ---------- RESULTS / SEATS SECTION ---------- */
+    .results-section {
+      background: #ffffffd9;
+      backdrop-filter: blur(4px);
+      border-radius: 2rem;
+      padding: 1.75rem 1.75rem 1.8rem;
+      box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .results-section h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #0b1e3a;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .bus-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 270px;
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-bottom: 1.25rem;
+      scrollbar-width: thin;
+      scrollbar-color: #b6c8dd #eef2f9;
+    }
+
+    .bus-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .bus-list::-webkit-scrollbar-thumb {
+      background: #b6c8dd;
+      border-radius: 20px;
+    }
+
+    .bus-card {
+      background: white;
+      border: 1.5px solid #e3eaf3;
+      border-radius: 1.5rem;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: 0.15s;
+      cursor: pointer;
+    }
+
+    .bus-card.selected {
+      border-color: #1e4f8a;
+      background: #f0f7ff;
+      box-shadow: 0 6px 14px -6px #1e4f8a40;
+    }
+
+    .bus-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .bus-name {
+      font-weight: 700;
+      color: #0b1e3a;
+      font-size: 1.05rem;
+    }
+
+    .bus-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: #5a6f87;
+    }
+
+    .bus-price {
+      font-weight: 700;
+      color: #1e4f8a;
+      font-size: 1.25rem;
+      background: #e7effb;
+      padding: 0.2rem 0.9rem;
+      border-radius: 40px;
+      white-space: nowrap;
+    }
+
+    .seat-area {
+      background: #ffffff;
+      border-radius: 1.5rem;
+      padding: 1.2rem 1.2rem 1.4rem;
+      box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e3eaf3;
+    }
+
+    .seat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .seat-header h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1e3a5f;
+    }
+
+    .legend {
+      display: flex;
+      gap: 0.9rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #4f6580;
+    }
+
+    .legend span::before {
+      content: "●";
+      margin-right: 0.25rem;
+      font-size: 0.9rem;
+      display: inline-block;
+    }
+
+    .legend .available::before { color: #cbdae9; }
+    .legend .selected::before { color: #1e4f8a; }
+    .legend .booked::before { color: #a0b8cf; }
+
+    .seat-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      justify-content: center;
+      margin-top: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .seat {
+      width: 2.8rem;
+      height: 2.8rem;
+      border-radius: 1rem;
+      background: #f0f4fa;
+      border: 1.5px solid #d0ddee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #2a4a6e;
+      transition: 0.1s;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .seat.available:hover {
+      background: #d9e6fa;
+      border-color: #1e4f8a;
+    }
+
+    .seat.selected {
+      background: #1e4f8a;
+      border-color: #1e4f8a;
+      color: white;
+      box-shadow: 0 4px 10px -2px #1e4f8a90;
+    }
+
+    .seat.booked {
+      background: #d2dceb;
+      border-color: #b8c8dd;
+      color: #7b8ea8;
+      cursor: not-allowed;
+      text-decoration: line-through;
+      font-weight: 500;
+    }
+
+    .booking-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      gap: 1rem;
+    }
+
+    .total-price {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #0b1e3a;
+      background: #e7effb;
+      padding: 0.5rem 1.4rem;
+      border-radius: 3rem;
+      white-space: nowrap;
+    }
+
+    .total-price span {
+      font-size: 1.35rem;
+      color: #1e4f8a;
+      margin-left: 0.3rem;
+    }
+
+    .confirm-btn {
+      background: #0b1e3a;
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 0.9rem 1.8rem;
+      border-radius: 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 8px 18px -8px #0b1e3a;
+      letter-spacing: 0.3px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .confirm-btn:hover:not(:disabled) {
+      background: #1a3355;
+      transform: scale(1.01);
+    }
+
+    .confirm-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .message {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.8rem 1.2rem;
+      border-radius: 1.5rem;
+      background: #eef6f0;
+      color: #1f5e3a;
+      border-left: 5px solid #2d7a4b;
+      transition: 0.2s;
+      min-height: 3.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .message.error {
+      background: #ffefef;
+      color: #b13e3e;
+      border-left-color: #c84a4a;
+    }
+
+    .empty-message {
+      color: #7a8ea8;
+      text-align: center;
+      padding: 1.5rem;
+      font-style: italic;
+      font-size: 0.95rem;
+    }
+
+    .input-group input[type="date"] {
+      color-scheme: light;
+    }
+
+    @media (max-width: 800px) {
+      .booking-panel {
+        grid-template-columns: 1fr;
+      }
+      .app-container {
+        padding: 1.5rem;
+      }
+      .bus-list {
+        max-height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <h1>
+    🚌 BusGo
+    <span>booking</span>
+  </h1>
+  <div class="subhead">Reserve your seat in seconds — smooth, fast, reliable.</div>
+
+  <div class="booking-panel">
+    <!-- LEFT: SEARCH FORM -->
+    <div class="search-section">
+      <h2>🔍 Find your bus</h2>
+      
+      <div class="input-group">
+        <label>From</label>
+        <input type="text" id="fromInput" placeholder="e.g. New York" value="New York">
+      </div>
+      <div class="input-group">
+        <label>To</label>
+        <input type="text" id="toInput" placeholder="e.g. Boston" value="Boston">
+      </div>
+      <div class="row-2col">
+        <div class="input-group">
+          <label>Date</label>
+          <input type="date" id="dateInput" value="2025-06-15">
+        </div>
+        <div class="input-group">
+          <label>Passengers</label>
+          <select id="passengerSelect">
+            <option value="1">1 passenger</option>
+            <option value="2" selected>2 passengers</option>
+            <option value="3">3 passengers</option>
+            <option value="4">4 passengers</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="search-btn" id="searchBtn">
+        <span>🔎</span> Search buses
+      </button>
+    </div>
+
+    <!-- RIGHT: RESULTS + SEATS -->
+    <div class="results-section">
+      <h2>🚌 Available buses</h2>
+      <div class="bus-list" id="busListContainer">
+        <!-- dynamic bus cards will appear here -->
+      </div>
+
+      <div class="seat-area">
+        <div class="seat-header">
+          <h3>Select seats</h3>
+          <div class="legend">
+            <span class="available">available</span>
+            <span class="selected">selected</span>
+            <span class="booked">booked</span>
+          </div>
+        </div>
+        <div class="seat-grid" id="seatGrid">
+          <!-- seat buttons will be injected -->
+        </div>
+      </div>
+
+      <div class="booking-actions">
+        <div class="total-price" id="totalPriceDisplay">$0</div>
+        <button class="confirm-btn" id="confirmBtn" disabled>
+          <span>🎫</span> Confirm booking
+        </button>
+      </div>
+
+      <div class="message" id="messageBox">
+        👋 Select a bus and seats to continue.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ---------- MOCK DATA ----------
+    const BUSES = [
+      { id: 'b1', name: 'Express Line 01', from: 'New York', to: 'Boston', price: 45, totalSeats: 16, bookedSeats: [3, 7, 12] },
+      { id: 'b2', name: 'City Hopper', from: 'New York', to: 'Boston', price: 38, totalSeats: 16, bookedSeats: [1, 5, 9, 14] },
+      { id: 'b3', name: 'Comfort Ride', from: 'New York', to: 'Boston', price: 52, totalSeats: 16, bookedSeats: [2, 4, 8, 11, 15] },
+      { id: 'b4', name: 'Metro Shuttle', from: 'New York', to: 'Boston', price: 30, totalSeats: 16, bookedSeats: [6, 10, 13] },
+      { id: 'b5', name: 'Night Liner', from: 'New York', to: 'Boston', price: 60, totalSeats: 16, bookedSeats: [0, 2, 5, 8, 12, 15] }
+    ];
+
+    // ---------- STATE ----------
+    let filteredBuses = [];            // buses after search
+    let selectedBusId = null;         // currently selected bus id
+    let selectedSeats = [];           // array of seat indices (0-based)
+    let passengerCount = 2;           // from select
+
+    // ---------- DOM REFS ----------
+    const fromInput = document.getElementById('fromInput');
+    const toInput = document.getElementById('toInput');
+    const dateInput = document.getElementById('dateInput');
+    const passengerSelect = document.getElementById('passengerSelect');
+    const searchBtn = document.getElementById('searchBtn');
+    const busListContainer = document.getElementById('busListContainer');
+    const seatGrid = document.getElementById('seatGrid');
+    const totalPriceDisplay = document.getElementById('totalPriceDisplay');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const messageBox = document.getElementById('messageBox');
+
+    // ---------- HELPER: show message ----------
+    function setMessage(text, isError = false) {
+      messageBox.textContent = text;
+      messageBox.classList.toggle('error', isError);
+    }
+
+    // ---------- GET CURRENT BUS OBJECT ----------
+    function getSelectedBus() {
+      if (!selectedBusId) return null;
+      return filteredBuses.find(b => b.id === selectedBusId) || null;
+    }
+
+    // ---------- RENDER BUS LIST ----------
+    function renderBusList() {
+      if (!filteredBuses.length) {
+        busListContainer.innerHTML = `<div class="empty-message">No buses found. Try different route.</div>`;
+        return;
+      }
+
+      busListContainer.innerHTML = filteredBuses.map(bus => {
+        const isSelected = bus.id === selectedBusId;
+        return `
+          <div class="bus-card ${isSelected ? 'selected' : ''}" data-bus-id="${bus.id}">
+            <div class="bus-info">
+              <div class="bus-name">${bus.name}</div>
+              <div class="bus-meta">
+                <span>🕒 08:30 → 12:15</span>
+                <span>💺 ${bus.totalSeats} seats</span>
+              </div>
+            </div>
+            <div class="bus-price">$${bus.price}</div>
+          </div>
+        `;
+      }).join('');
+
+      // attach click listeners
+      document.querySelectorAll('.bus-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          const busId = card.dataset.busId;
+          if (busId === selectedBusId) return; // already selected
+          
+          // switch bus: reset selected seats
+          selectedBusId = busId;
+          selectedSeats = [];
+          setMessage(`Selected bus: ${getSelectedBus()?.name}. Now pick seats.`);
+          
+          renderBusList();      // update highlight
+          renderSeats();        // reset seat grid
+          updateTotalAndButton();
+        });
+      });
+    }
+
+    // ---------- RENDER SEAT GRID ----------
+    function renderSeats() {
+      const bus = getSelectedBus();
+      if (!bus) {
+        seatGrid.innerHTML = `<div class="empty-message">Please select a bus first.</div>`;
+        return;
+      }
+
+      const bookedSet = new Set(bus.bookedSeats);
+      let seatsHtml = '';
+
+      for (let i = 0; i < bus.totalSeats; i++) {
+        const isBooked = bookedSet.has(i);
+        const isSelected = selectedSeats.includes(i);
+        let seatClass = 'seat ';
+        if (isBooked) seatClass += 'booked';
+        else if (isSelected) seatClass += 'selected';
+        else seatClass += 'available';
+
+        seatsHtml += `<div class="${seatClass}" data-seat-index="${i}">${i + 1}</div>`;
+      }
+
+      seatGrid.innerHTML = seatsHtml;
+
+      // attach click events for available seats
+      document.querySelectorAll('.seat.available').forEach(seatDiv => {
+        seatDiv.addEventListener('click', (e) => {
+          const seatIndex = parseInt(seatDiv.dataset.seatIndex, 10);
+          handleSeatClick(seatIndex);
+        });
+      });
+    }
+
+    // ---------- HANDLE SEAT SELECTION ----------
+    function handleSeatClick(seatIndex) {
+      const bus = getSelectedBus();
+      if (!bus) return;
+
+      // Check if seat is already booked (should not happen, but safety)
+      if (bus.bookedSeats.includes(seatIndex)) return;
+
+      // Toggle selection
+      if (selectedSeats.includes(seatIndex)) {
+        // deselect
+        selectedSeats = selectedSeats.filter(idx => idx !== seatIndex);
+      } else {
+        // enforce max passenger count
+        if (selectedSeats.length >= passengerCount) {
+          setMessage(`You can only select up to ${passengerCount} seat(s). Please deselect one.`, true);
+          return;
+        }
+        selectedSeats.push(seatIndex);
+      }
+
+      // Re-render seats and totals
+      renderSeats();
+      updateTotalAndButton();
+
+      if (selectedSeats.length > 0) {
+        setMessage(`Selected seats: ${selectedSeats.map(i => i+1).join(', ')}. Total: $${(selectedSeats.length * bus.price).toFixed(2)}`);
+      } else {
+        setMessage('Select seats to continue.');
+      }
+    }
+
+    // ---------- UPDATE TOTAL & CONFIRM BUTTON ----------
+    function updateTotalAndButton() {
+      const bus = getSelectedBus();
+      const total = (bus && selectedSeats.length) ? (selectedSeats.length * bus.price) : 0;
+      totalPriceDisplay.textContent = `$${total.toFixed(2)}`;
+
+      // Enable confirm if bus selected, at least one seat, and <= passengerCount (always true)
+      const isValid = !!bus && selectedSeats.length > 0;
+      confirmBtn.disabled = !isValid;
+
+      // If no bus selected or seats 0, also update message
+      if (!bus) {
+        setMessage('Please select a bus from the list.');
+      } else if (selectedSeats.length === 0) {
+        setMessage('Select your seats to proceed.');
+      }
+    }
+
+    // ---------- SEARCH FUNCTION ----------
+    function performSearch() {
+      const from = fromInput.value.trim() || 'New York';
+      const to = toInput.value.trim() || 'Boston';
+      
+      // Update passenger count from select
+      passengerCount = parseInt(passengerSelect.value, 10);
+
+      // Filter buses (case-insensitive)
+      filteredBuses = BUSES.filter(bus => 
+        bus.from.toLowerCase() === from.toLowerCase() && 
+        bus.to.toLowerCase() === to.toLowerCase()
+      );
+
+      // Reset selected bus and seats
+      selectedBusId = null;
+      selectedSeats = [];
+
+      // Re-render components
+      renderBusList();
+      
+      // If any bus exists, auto-select first bus for convenience
+      if (filteredBuses.length > 0) {
+        selectedBusId = filteredBuses[0].id;
+        selectedSeats = [];
+        renderBusList();    // highlight first bus
+        renderSeats();      // show seats for first bus
+        setMessage(`Found ${filteredBuses.length} buses. Selected ${filteredBuses[0].name} — choose your seats.`);
+      } else {
+        seatGrid.innerHTML = `<div class="empty-message">No buses available for this route.</div>`;
+        setMessage('No buses found. Try different cities.', true);
+      }
+
+      updateTotalAndButton();
+    }
+
+    // ---------- CONFIRM BOOKING ----------
+    function confirmBooking() {
+      const bus = getSelectedBus();
+      if (!bus) {
+        setMessage('Please select a bus first.', true);
+        return;
+      }
+      if (selectedSeats.length === 0) {
+        setMessage('Please select at least one seat.', true);
+        return;
+      }
+
+      // Simulate booking: mark seats as booked (in real life, server call)
+      // For demo, we update the BUSES array (mock booking)
+      const busIndex = BUSES.findIndex(b => b.id === bus.id);
+      if (busIndex !== -1) {
+        // Add selected seats to bookedSeats (avoid duplicates)
+        const newBooked = [...new Set([...BUSES[busIndex].bookedSeats, ...selectedSeats])];
+        BUSES[busIndex].bookedSeats = newBooked;
+      }
+
+      // Also update filteredBuses reference (since it points to same objects)
+      // But we need to re-sync - simpler: refresh filteredBuses entry
+      const fBusIndex = filteredBuses.findIndex(b => b.id === bus.id);
+      if (fBusIndex !== -1) {
+        filteredBuses[fBusIndex].bookedSeats = BUSES[busIndex].bookedSeats;
+      }
+
+      const seatsNumbers = selectedSeats.map(i => i+1).join(', ');
+      const totalPaid = (selectedSeats.length * bus.price).toFixed(2);
+
+      setMessage(`✅ Booking confirmed! Bus ${bus.name}, seats: ${seatsNumbers}. Total: $${totalPaid}.`);
+
+      // Clear selected seats, but keep bus selected (so user sees updated availability)
+      selectedSeats = [];
+
+      // Re-render seats to show newly booked seats
+      renderSeats();
+      updateTotalAndButton();
+
+      // Optional: disable confirm because no seats selected now, but message shows success.
+    }
+
+    // ---------- INIT / EVENT LISTENERS ----------
+    function init() {
+      // Set default passenger count
+      passengerCount = parseInt(passengerSelect.value, 10);
+
+      // Initial search to populate buses
+      performSearch();
+
+      // Search button click
+      searchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        performSearch();
+      });
+
+      // Passenger select change
+      passengerSelect.addEventListener('change', (e) => {
+        passengerCount = parseInt(e.target.value, 10);
+        // If selected seats exceed new passenger count, trim them
+        if (selectedSeats.length > passengerCount) {
+          selectedSeats = selectedSeats.slice(0, passengerCount);
+          setMessage(`Passenger count changed. Only first ${passengerCount} seats kept.`, false);
+        }
+        renderSeats();
+        updateTotalAndButton();
+      });
+
+      // Confirm button
+      confirmBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        confirmBooking();
+      });
+
+      // Also allow pressing Enter on search inputs
+      [fromInput, toInput].forEach(input => {
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+          }
+        });
+      });
+    }
+
+    // Start app
+    init();
+  })();
+</script>
+</body>
+</html>
